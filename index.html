@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BaseTech - AI Swap Portal</title>
+    <title>BaseTech - Clanker v4 Token Portal</title>
     
     <!-- Mini App Metadata -->
     <meta name="fc:miniapp" content='{"version": "next", "imageUrl": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1200&auto=format&fit=crop&ar=3:2", "button": {"title": "Launch BaseTech", "action": {"type": "launch_frame", "name": "BaseTech", "splashImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=BaseTech", "splashBackgroundColor": "#0052FF"}}}'/>
@@ -39,31 +39,39 @@
             border-radius: 50%; animation: rotation 1s linear infinite;
         }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     </style>
     
     <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@19.0.0",
-        "react-dom": "https://esm.sh/react-dom@19.0.0",
-        "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-        "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
-        "@google/genai": "https://esm.sh/@google/genai@1.3.2",
-        "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
-        "recharts": "https://esm.sh/recharts@2.15.0?external=react,react-dom",
-        "viem": "https://esm.sh/viem@2.21.58",
-        "viem/chains": "https://esm.sh/viem@2.21.58/chains",
-        "wagmi": "https://esm.sh/wagmi@2.14.9?external=react,react-dom,viem,@tanstack/react-query",
-        "wagmi/connectors": "https://esm.sh/wagmi@2.14.9/connectors?external=react,react-dom,viem,@tanstack/react-query",
-        "wagmi/chains": "https://esm.sh/wagmi@2.14.9/chains?external=react,react-dom,viem,@tanstack/react-query",
-        "@wagmi/core": "https://esm.sh/@wagmi/core@2.16.5?external=viem",
-        "@farcaster/miniapp-sdk": "https://esm.sh/@farcaster/miniapp-sdk@latest",
-        "@farcaster/miniapp-wagmi-connector": "https://esm.sh/@farcaster/miniapp-wagmi-connector@latest?external=wagmi,viem",
-        "@tanstack/react-query": "https://esm.sh/@tanstack/react-query@5.66.0?external=react",
-        "@tanstack/query-core": "https://esm.sh/@tanstack/query-core@5.66.0"
-      }
-    }
-    </script>
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
+    "@google/genai": "https://esm.sh/@google/genai@1.3.2",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
+    "recharts": "https://esm.sh/recharts@2.15.0?external=react,react-dom",
+    "viem": "https://esm.sh/viem@2.21.58",
+    "viem/chains": "https://esm.sh/viem@2.21.58/chains",
+    "wagmi": "https://esm.sh/wagmi@2.14.9?external=react,react-dom,viem,@tanstack/react-query",
+    "wagmi/connectors": "https://esm.sh/wagmi@2.14.9/connectors?external=react,react-dom,viem,@tanstack/react-query",
+    "wagmi/chains": "https://esm.sh/wagmi@2.14.9/chains?external=react,react-dom,viem,@tanstack/react-query",
+    "@wagmi/core": "https://esm.sh/@wagmi/core@2.16.5?external=viem",
+    "@farcaster/miniapp-sdk": "https://esm.sh/@farcaster/miniapp-sdk@latest",
+    "@farcaster/miniapp-wagmi-connector": "https://esm.sh/@farcaster/miniapp-wagmi-connector@latest?external=wagmi,viem",
+    "@tanstack/react-query": "https://esm.sh/@tanstack/react-query@5.66.0?external=react",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "viem/": "https://esm.sh/viem@^2.44.1/",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
 </head>
 <body class="dark">
     <div id="loading-screen">

@@ -1,5 +1,7 @@
 {
   "name": "BaseTech",
-  "description": "AI-Powered Token Swap Portal on Base Chain.",
-  "requestFramePermissions": []
+  "description": "L2 Powered Token Portal & Clanker-style Deployer on Base Chain.",
+  "requestFramePermissions": [
+    "camera"
+  ]
 }
