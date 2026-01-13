@@ -48,12 +48,17 @@ function AppContent() {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
+        throw new Error("Native share unavailable");
+      }
+    } catch (e) {
+      console.log("BaseTech: Falling back to clipboard share.");
+      try {
         await navigator.clipboard.writeText(window.location.href);
         setIsShared(true);
         setTimeout(() => setIsShared(false), 2000);
+      } catch (clipErr) {
+        console.warn("Share failed completely:", clipErr);
       }
-    } catch (e) {
-      console.warn("Share failed:", e);
     }
   };
 
@@ -89,8 +94,9 @@ function AppContent() {
           </div>
 
           <div className="flex items-center gap-2">
-             <button onClick={handleShare} className="p-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all">
+             <button onClick={handleShare} className="p-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2">
                 {isShared ? <Check className="w-5 h-5 text-green-500" /> : <Share2 className="w-5 h-5" />}
+                {isShared && <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Copied</span>}
              </button>
              <button onClick={handleConnect} className="hidden sm:flex px-5 py-2.5 bg-[#0052FF] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#0042CC] transition-all shadow-lg">
                 {isConnected ? address?.slice(0, 6) + '...' : 'Connect'}

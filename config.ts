@@ -1,7 +1,8 @@
-import { createConfig, http } from "wagmi";
-import { base } from "wagmi/chains";
+
+import { createConfig, http, injected } from "wagmi";
+// Fix: Import base from viem/chains as it may be missing from wagmi/chains in some environments
+import { base } from "viem/chains";
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector";
-import { injected } from "wagmi/connectors";
 
 // Standard Wagmi 2.x config with safe connector initialization
 export const config = createConfig({

@@ -1,9 +1,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Token } from "../types.ts";
 
-const getAIInstance = () => {
-  const apiKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : '';
-  return new GoogleGenAI({ apiKey: apiKey || '' });
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+
+const cleanJson = (str: string) => {
+  return str.replace(/```json/g, "").replace(/```/g, "").trim();
 };
 
 export const getSwapInsights = async (fromToken: Token, toToken: Token, amount: string): Promise<string> => {
@@ -12,19 +13,19 @@ export const getSwapInsights = async (fromToken: Token, toToken: Token, amount: 
     Swapping ${amount} ${fromToken.symbol} for ${toToken.symbol}.
     - ${fromToken.symbol} Price: $${fromToken.price}
     - ${toToken.symbol} Price: $${toToken.price}
-    Provide a 2-sentence strategy insight.
+    Provide a concise 2-sentence strategy insight or market context.
   `;
 
   try {
-    const ai = getAIInstance();
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
     });
-    return response.text || "Insight unavailable.";
+    return response.text || "Insight unavailable at this moment.";
   } catch (error) {
-    console.warn("AI Service Error:", error);
-    return "The AI Oracle is taking a break.";
+    console.error("AI Insight Error:", error);
+    return "DeFi Intelligence Oracle is temporarily offline.";
   }
 };
 
@@ -33,12 +34,14 @@ export interface TokenConcept {
   symbol: string;
   description: string;
   imagePrompt: string;
+  suggestedVaultDays?: number;
 }
 
 export const generateTokenConcept = async (vibe: string): Promise<TokenConcept> => {
   try {
-    const ai = getAIInstance();
-    const prompt = `Concept for Base chain token: "${vibe}". Return JSON with name, symbol, description (max 15 words), imagePrompt.`;
+    const ai = getAI();
+    const prompt = `Generate a creative crypto token concept for a Clanker-style launch on Base Chain based on this vibe: "${vibe}". Return JSON with name, symbol, description (max 15 words), a detailed visual prompt for an image generator, and suggested vaultDays (7-365).`;
+    
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
@@ -51,30 +54,45 @@ export const generateTokenConcept = async (vibe: string): Promise<TokenConcept> 
             symbol: { type: Type.STRING },
             description: { type: Type.STRING },
             imagePrompt: { type: Type.STRING },
+            suggestedVaultDays: { type: Type.INTEGER },
           },
           required: ['name', 'symbol', 'description', 'imagePrompt']
         }
       }
     });
-    return JSON.parse(response.text);
+    
+    const rawText = response.text || "{}";
+    const cleanedJsonStr = cleanJson(rawText);
+    return JSON.parse(cleanedJsonStr);
   } catch (error) {
-    throw new Error("Concept generation failed.");
+    console.error("Concept Gen Error:", error);
+    throw new Error("Failed to materialize the concept.");
   }
 };
 
 export const generateTokenImage = async (prompt: string): Promise<string> => {
   try {
-    const ai = getAIInstance();
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
-        parts: [{ text: `Digital crypto token art: ${prompt}. Professional, vibrant.` }]
+        parts: [{ text: `High-quality, professional crypto token icon, 3D render, minimalist background, neon accents, centered: ${prompt}` }]
       },
-      config: { imageConfig: { aspectRatio: "1:1" } }
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1"
+        }
+      }
     });
-    const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-    return imagePart?.inlineData ? `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}` : 'https://api.dicebear.com/7.x/identicon/svg?seed=fallback';
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
+    }
+    return "https://api.dicebear.com/7.x/identicon/svg?seed=fallback";
   } catch (error) {
+    console.error("Image Gen Error:", error);
     return "https://api.dicebear.com/7.x/identicon/svg?seed=fallback";
   }
 };
