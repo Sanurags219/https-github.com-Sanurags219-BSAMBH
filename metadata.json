@@ -2,6 +2,8 @@
   "name": "BaseTech",
   "description": "L2 Powered Token Portal & Clanker-style Deployer on Base Chain.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone",
+    "geolocation"
   ]
 }

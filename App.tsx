@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Rocket, Sparkles, TrendingUp, ArrowLeftRight, Wand2, Menu, X, Share2, Check, Shield, Info, Activity
+  Rocket, Sparkles, TrendingUp, ArrowLeftRight, Wand2, Menu, X, Share2, Check, Shield, Info, Activity, Mic, Zap
 } from 'lucide-react';
 import { SwapCard } from './components/SwapCard.tsx';
 import { PriceChart } from './components/PriceChart.tsx';
@@ -9,8 +9,10 @@ import { VibeLauncher } from './components/VibeLauncher.tsx';
 import { Portfolio } from './components/Portfolio.tsx';
 import { UserProfile } from './components/UserProfile.tsx';
 import { LiveMints } from './components/LiveMints.tsx';
+import { VoiceAssistant } from './components/VoiceAssistant.tsx';
 import { sdk } from "@farcaster/miniapp-sdk";
 import { theme } from './styles/theme.ts';
+import { getBaseEcosystemAlpha } from './services/geminiService.ts';
 
 // Correctly import QueryClient and QueryClientProvider from @tanstack/react-query
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -27,8 +29,16 @@ function AppContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShared, setIsShared] = useState(false);
   const [selectedTokenSymbol, setSelectedTokenSymbol] = useState<string | null>(null);
+  const [showVoiceOracle, setShowVoiceOracle] = useState(false);
+  const [alphaContent, setAlphaContent] = useState<{ text: string; sources: any[] } | null>(null);
 
   useEffect(() => {
+    const fetchAlpha = async () => {
+      const data = await getBaseEcosystemAlpha();
+      setAlphaContent(data);
+    };
+    fetchAlpha();
+
     // Detect deep links from Alpha shares
     const params = new URLSearchParams(window.location.search);
     const sharedToken = params.get('token');
@@ -75,7 +85,9 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white font-sans pb-24 transition-colors duration-500">
+    <div className="min-h-screen bg-[#030303] text-white font-sans pb-24 transition-colors duration-500 overflow-x-hidden">
+      {showVoiceOracle && <VoiceAssistant onClose={() => setShowVoiceOracle(false)} />}
+      
       <header className="sticky top-0 z-[100] border-b border-white/5 bg-black/60 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTab('swap'); setSelectedTokenSymbol(null); }}>
@@ -106,15 +118,15 @@ function AppContent() {
           </div>
 
           <div className="flex items-center gap-2">
+             <button onClick={() => setShowVoiceOracle(true)} className="p-2.5 rounded-xl bg-[#0052FF]/10 text-[#0052FF] border border-[#0052FF]/20 hover:bg-[#0052FF]/20 transition-all flex items-center gap-2">
+                <Mic className="w-5 h-5" />
+                <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest">Oracle</span>
+             </button>
              <button onClick={handleShareMain} className="p-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2">
                 {isShared ? <Check className="w-5 h-5 text-green-500" /> : <Share2 className="w-5 h-5" />}
-                {isShared && <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Copied</span>}
              </button>
              <button onClick={handleConnect} className="hidden sm:flex px-5 py-2.5 bg-[#0052FF] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#0042CC] transition-all shadow-lg">
                 {isConnected ? address?.slice(0, 6) + '...' : 'Connect'}
-             </button>
-             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2.5 rounded-xl bg-white/5 border border-white/5">
-                {isMobileMenuOpen ? <X /> : <Menu />}
              </button>
           </div>
         </div>
@@ -127,14 +139,45 @@ function AppContent() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-7 space-y-8">
               <PriceChart />
-              <LiveMints onSelectToken={(symbol) => setSelectedTokenSymbol(symbol)} />
-              <div className="p-8 rounded-[2rem] bg-white/5 border border-white/5 relative overflow-hidden">
-                <div className="flex items-center gap-3 mb-4">
-                  <Shield className="w-5 h-5 text-[#0052FF]" />
-                  <h3 className="font-black text-sm uppercase tracking-widest text-white">Base Network Safe</h3>
+              
+              {/* Grounded Alpha Section */}
+              <div className={`${theme.glass} p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group`}>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-[#0052FF] p-2 rounded-xl">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-black tracking-tight uppercase text-white">Base Ecosystem <span className="text-[#0052FF]">Alpha</span></h3>
                 </div>
-                <p className="text-sm opacity-60 text-white/60">Verified Liquidity Pools detected across Base L2 chain. All Clanker V4 contracts are subject to market auction round audits.</p>
+                
+                {alphaContent ? (
+                  <div className="space-y-6">
+                    <p className="text-sm text-white/70 leading-relaxed font-medium">
+                      {alphaContent.text}
+                    </p>
+                    {alphaContent.sources.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {alphaContent.sources.map((source, i) => (
+                          <a 
+                            key={i} 
+                            href={source.uri} 
+                            target="_blank" 
+                            className="text-[9px] bg-white/5 px-3 py-1.5 rounded-full border border-white/10 hover:border-[#0052FF]/30 transition-all text-white/40 hover:text-[#0052FF]"
+                          >
+                            {source.title.slice(0, 30)}...
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-4 bg-white/5 rounded w-3/4" />
+                    <div className="h-4 bg-white/5 rounded w-1/2" />
+                  </div>
+                )}
               </div>
+
+              <LiveMints onSelectToken={(symbol) => setSelectedTokenSymbol(symbol)} />
             </div>
             <div className="lg:col-span-5">
               <SwapCard onSwapComplete={() => setActiveTab('portfolio')} />
@@ -210,6 +253,7 @@ function AppContent() {
         <button onClick={() => { setActiveTab('swap'); setSelectedTokenSymbol(null); }} className={`p-4 rounded-2xl transition-all ${activeTab === 'swap' ? 'bg-[#0052FF] text-white' : 'opacity-40 text-white'}`}><ArrowLeftRight /></button>
         <button onClick={() => { setActiveTab('launcher'); setSelectedTokenSymbol(null); }} className={`p-4 rounded-2xl transition-all ${activeTab === 'launcher' ? 'bg-[#0052FF] text-white' : 'opacity-40 text-white'}`}><Wand2 /></button>
         <button onClick={() => { setActiveTab('portfolio'); setSelectedTokenSymbol(null); }} className={`p-4 rounded-2xl transition-all ${activeTab === 'portfolio' ? 'bg-[#0052FF] text-white' : 'opacity-40 text-white'}`}><TrendingUp /></button>
+        <button onClick={() => setShowVoiceOracle(true)} className="p-4 rounded-2xl bg-[#0052FF] text-white shadow-lg"><Mic /></button>
       </nav>
     </div>
   );

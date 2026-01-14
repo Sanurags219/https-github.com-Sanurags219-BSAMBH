@@ -1,10 +1,6 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Token } from "../types.ts";
-
-export interface TokenSuggestion {
-  name: string;
-  symbol: string;
-}
 
 /**
  * Rapidly generates a list of suggested token names and symbols based on a vibe.
@@ -46,6 +42,11 @@ export interface TokenConcept {
   description: string;
   imagePrompt: string;
   suggestedVaultDays?: number;
+}
+
+export interface TokenSuggestion {
+  name: string;
+  symbol: string;
 }
 
 /**
@@ -107,6 +108,37 @@ export const getSwapInsights = async (fromToken: Token, toToken: Token, amount: 
   } catch (error) {
     console.error("AI Insight Error:", error);
     return "Intelligence Oracle temporarily offline.";
+  }
+};
+
+/**
+ * Fetches real-time Base chain ecosystem news and trending tokens using Google Search.
+ */
+export const getBaseEcosystemAlpha = async (): Promise<{ text: string; sources: { title: string; uri: string }[] }> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: "What are the trending tokens and latest ecosystem developments on Base Chain (L2) today? Provide a concise summary of current alpha.",
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
+      ?.filter((chunk: any) => chunk.web)
+      ?.map((chunk: any) => ({
+        title: chunk.web.title,
+        uri: chunk.web.uri,
+      })) || [];
+
+    return {
+      text: response.text || "Scanning Base ecosystem for alpha...",
+      sources
+    };
+  } catch (error) {
+    console.error("Search Grounding Error:", error);
+    return { text: "Network congestion in the Alpha stream.", sources: [] };
   }
 };
 
